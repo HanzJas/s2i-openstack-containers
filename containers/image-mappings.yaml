@@ -74,9 +74,6 @@ openstack_version:
       - manilaAPIImage
     manila/manila-scheduler:
       - manilaSchedulerImage
-    # Mapped for operator consumers. s2i-openstack-deploy-validation omits
-    # this key via s2i_ci_skip_os_custom_images until operators adopt
-    # eventless master images. Do not replace with a quay master-latest pin.
     mariadb/mariadb:
       - mariadbImage
     memcached/memcached:
@@ -85,17 +82,12 @@ openstack_version:
       - ironicNeutronAgentImage
     neutron/neutron-dhcp-agent:
       - edpmNeutronDhcpAgentImage
-    # Mapped for operator consumers. s2i-openstack-deploy-validation omits
-    # this key via s2i_ci_skip_os_custom_images until operators adopt
-    # eventless master images. Do not replace with a quay master-latest pin.
     neutron/neutron-metadata-agent-ovn:
       - edpmNeutronMetadataAgentImage
     neutron/neutron-ovn-agent:
       - edpmNeutronOvnAgentImage
-    # Mapped for operator consumers. s2i-openstack-deploy-validation omits
-    # this key via s2i_ci_skip_os_custom_images until operators adopt
-    # eventless master images. Do not replace with a quay master-latest pin.
     neutron/neutron-server:
+      - infraDnsmasqImage
       - neutronAPIImage
     neutron/neutron-sriov-agent:
       - edpmNeutronSriovAgentImage
