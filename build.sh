@@ -98,6 +98,10 @@
 #                     build all packages from source instead of using wheels.
 #   PBR_VERSION_FROM_GIT  If true, let PBR derive source package versions from
 #                     Git instead of using the versions pinned in sources.txt.
+#   GIT_REVISION      Commit of this repository recorded as
+#                     org.opencontainers.image.revision on every image.
+#                     Zuul sets zuul.newrev; GHA sets github.sha. When unset,
+#                     HEAD of this checkout is used.
 #   REGISTRY_AUTH_FILE Authentication file passed explicitly to buildah push.
 #   REGISTRY_CERT_DIR  TLS certificate directory passed explicitly to buildah push.
 #
@@ -202,6 +206,21 @@ image_tag_args() {
   for t in "${tags[@]}"; do
     args="${args} --tag ${REGISTRY}/${NAMESPACE}/${name}:${t}"
   done
+  echo "${args}"
+}
+
+# OCI labels applied to every image. Stream is always set; revision is the
+# s2i-openstack-containers commit that produced the build.
+image_label_args() {
+  local revision="${GIT_REVISION:-}"
+  if [[ -z "${revision}" ]]; then
+    revision="$(git -C "${REPO_ROOT}" rev-parse HEAD 2>/dev/null || true)"
+  fi
+  local args=""
+  args="${args} --label s2i.openstack.org/stream=${STREAM}"
+  if [[ -n "${revision}" ]]; then
+    args="${args} --label org.opencontainers.image.revision=${revision}"
+  fi
   echo "${args}"
 }
 
@@ -451,6 +470,7 @@ build_image() {
     fi
     buildah bud \
       $(image_tag_args "${dir_name}") \
+      $(image_label_args) \
       --build-arg "CONSTRAINTS_FILE=${base_constraints}" \
       --build-arg "BASE_IMAGE=${BASE_IMAGE}" \
       ${PIP_NO_BINARY:+--build-arg "PIP_NO_BINARY=${PIP_NO_BINARY}"} \
@@ -470,6 +490,7 @@ build_image() {
   if [[ ! -f "${CONTAINERS_DIR}/${project}/sources.txt" ]]; then
     buildah bud \
       $(image_tag_args "${dir_name}") \
+      $(image_label_args) \
       --build-arg "BASE_IMAGE=${BASE_IMAGE}" \
       -f "${CONTAINERS_DIR}/${dir_name}/Containerfile" \
       "${CONTAINERS_DIR}/${project}/"
@@ -514,6 +535,7 @@ build_image() {
 
   buildah bud \
     $(image_tag_args "${dir_name}") \
+    $(image_label_args) \
     --build-arg "CONSTRAINTS_FILE=${build_constraints}" \
     --build-arg "BASE_IMAGE=${BASE_IMAGE}" \
     ${PIP_NO_BINARY:+--build-arg "PIP_NO_BINARY=${PIP_NO_BINARY}"} \

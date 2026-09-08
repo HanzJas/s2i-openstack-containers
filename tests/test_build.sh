@@ -149,6 +149,7 @@ _run() {
     export TAG=test
     export PARALLEL=2
     export BUILD_LOGS_DIR="${TEST_DIR}/logs"
+    export GIT_REVISION="${GIT_REVISION:-}"
     ./build.sh "${action}" "$@"
   )
 }
@@ -211,6 +212,20 @@ test_build_passes_source_version_arguments() {
   assert_grep 'SOURCE_VERSION_STREAM=master' "${TEST_DIR}/build.log"
 }
 
+test_build_applies_oci_labels() {
+  GIT_REVISION=abc123def456 _run build alpha/one >"${TEST_DIR}/build.log" 2>&1
+
+  assert_grep 'org.opencontainers.image.revision=abc123def456' "${TEST_DIR}/build.log"
+  assert_grep 's2i.openstack.org/stream=master' "${TEST_DIR}/build.log"
+}
+
+test_build_applies_oci_labels_on_base() {
+  GIT_REVISION=abc123def456 _run build base >"${TEST_DIR}/build.log" 2>&1
+
+  assert_grep 'org.opencontainers.image.revision=abc123def456' "${TEST_DIR}/build.log"
+  assert_grep 's2i.openstack.org/stream=master' "${TEST_DIR}/build.log"
+}
+
 test_parallel_build_produces_logs() {
   _run build-parallel "alpha/one,beta/two" >"${TEST_DIR}/build.log" 2>&1 || true
 
@@ -253,6 +268,8 @@ TESTS=(
   test_resolve_all_returns_machine_readable_targets
   test_refs_rejects_unknown_target
   test_build_passes_source_version_arguments
+  test_build_applies_oci_labels
+  test_build_applies_oci_labels_on_base
   test_parallel_build_produces_logs
   test_parallel_build_shows_live_output
   test_parallel_failure_propagates
