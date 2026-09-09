@@ -5,7 +5,7 @@ contributor workflows. For a concise project introduction, see the root
 [`README.md`](../README.md). For a short testing entry point, see
 [`TESTING.md`](TESTING.md). For dropping unwanted upstream dependencies, see
 [`excluding-requirements.md`](excluding-requirements.md). To wire a live
-deploy+tempest job on an operator repository, see
+deploy+test job on an operator repository, see
 [`operator-onboarding.md`](operator-onboarding.md).
 
 Source-to-image container builds for OpenStack services on UBI 10 (ubi-minimal).
@@ -428,7 +428,7 @@ To compose the provider in an operator repository, define
 `<service>-s2i-content-provider` that parents this job, add the
 container repository to `required-projects`, and override `s2i_ci_images`
 with that service's image targets. The matching deploy job is
-`<service>-s2i-tempest` (see
+`<service>-s2i-test-<foo>` (see
 [`operator-onboarding.md`](operator-onboarding.md)). Zuul places those
 projects in the shared buildset workspace. Speculative source staging
 is described in [Speculative builds](#speculative-builds-zuul-integration).
@@ -747,10 +747,9 @@ which upstream repos feed into a given image.
 ### Adding speculative deploy+test validation for a service
 
 Once the content provider can build images for a service, wire a live
-deploy+tempest job on the operator repository. Follow
+deploy+test job on the operator repository. Follow
 [`operator-onboarding.md`](operator-onboarding.md).
 
 That playbook covers job naming (`<service>-s2i-content-provider`,
-`<service>-s2i-tempest`), dual-registry trust, `edpm_prepare` injection,
-and the OpenDev `s2i-speculative-build` template. Do not parent
-`s2i-speculative-deploy-test-base` on operator `github-check`.
+`<service>-s2i-test-<foo>`), dual-registry trust, `edpm_prepare` injection,
+and the OpenDev `s2i-speculative-build` template.
