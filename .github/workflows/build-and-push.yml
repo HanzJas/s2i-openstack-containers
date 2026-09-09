@@ -29,6 +29,8 @@ jobs:
 
       - name: Build images
         run: tox -e build
+        env:
+          GIT_REVISION: ${{ github.sha }}
 
       - name: list images
         id: built-images
